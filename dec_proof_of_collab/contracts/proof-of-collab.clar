@@ -156,3 +156,23 @@
         err-not-found
     )
 )
+
+;; Read-only functions
+(define-read-only (get-contribution (contribution-id uint))
+    (map-get? Contributions contribution-id)
+)
+
+(define-read-only (get-contributor-profile (contributor principal))
+    (map-get? Contributors contributor)
+)
+
+(define-read-only (get-contributor-tier (contributor principal))
+    (match (map-get? Contributors contributor)
+        profile (ok (get tier profile))
+        err-not-found
+    )
+)
+
+(define-read-only (is-project-admin (address principal))
+    (default-to false (map-get? project-admins address))
+)
