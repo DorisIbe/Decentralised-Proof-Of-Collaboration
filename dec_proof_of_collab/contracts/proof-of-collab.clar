@@ -16,3 +16,30 @@
 (define-constant SILVER-THRESHOLD u100)
 (define-constant GOLD-THRESHOLD u250)
 (define-constant PLATINUM-THRESHOLD u500)
+
+;; Data maps for storing contributor and contribution information
+(define-map Contributors
+    principal
+    {
+        total-score: uint,
+        contribution-count: uint,
+        tier: uint,
+        is-active: bool
+    }
+)
+
+(define-map Contributions
+    uint
+    {
+        contributor: principal,
+        timestamp: uint,
+        details: (string-utf8 256),
+        score: uint,
+        verified: bool
+    }
+)
+
+(define-map project-admins principal bool)
+
+;; Data variable to keep track of contribution IDs
+(define-data-var contribution-counter uint u0)
