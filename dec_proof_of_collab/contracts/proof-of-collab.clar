@@ -131,3 +131,28 @@
         )
     )
 )
+
+;; Calculate and update contributor tier
+(define-public (update-contributor-tier (contributor principal))
+    (match (map-get? Contributors contributor)
+        profile (let
+            ((total-score (get total-score profile)))
+            (begin
+                (map-set Contributors contributor
+                    (merge profile
+                        {
+                            tier: (if (>= total-score PLATINUM-THRESHOLD)
+                                    PLATINUM
+                                    (if (>= total-score GOLD-THRESHOLD)
+                                        GOLD
+                                        (if (>= total-score SILVER-THRESHOLD)
+                                            SILVER
+                                            BRONZE)))
+                        }
+                    )
+                )
+                (ok true)
+            ))
+        err-not-found
+    )
+)
