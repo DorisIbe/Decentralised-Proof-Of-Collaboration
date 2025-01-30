@@ -195,6 +195,40 @@
     )
 )
 
+;; Activity tracking
+(define-public (update-activity-streak (contributor principal))
+    (let (
+        (current-block block-height)
+    )
+    (begin
+        (match (map-get? Achievements contributor)
+            prev-achievements
+            (let (
+                (days-since-last-active (/ (- current-block (get last-active prev-achievements)) BLOCKS-PER-DAY))
+            )
+            (begin
+                (map-set Achievements contributor
+                    (merge prev-achievements
+                        {
+                            last-active: current-block,
+                            streak: (if (<= days-since-last-active u1)
+                                (+ (get streak prev-achievements) u1)
+                                u1)
+                        }
+                    )
+                ))
+            )
+            (map-set Achievements contributor
+                {
+                    badges: (list ),
+                    last-active: current-block,
+                    streak: u1
+                }
+            )
+        )
+        (ok true)
+    ))
+)
 
 ;; Read-only functions
 (define-read-only (get-contribution (contribution-id uint))
