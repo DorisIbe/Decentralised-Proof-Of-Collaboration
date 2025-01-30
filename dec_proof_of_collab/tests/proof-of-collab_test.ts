@@ -48,3 +48,27 @@ Clarinet.test({
     },
 });
 
+
+Clarinet.test({
+    name: "Ensure that users can submit contributions and get correct initial tier",
+    async fn(chain: Chain, accounts: Map<string, Account>)
+    {
+        const wallet1 = accounts.get("wallet_1")!;
+
+        let block = chain.mineBlock([
+            Tx.contractCall("proof-of-collaboration", "submit-contribution",
+                [types.utf8("Test contribution")],
+                wallet1.address
+            ),
+            Tx.contractCall("proof-of-collaboration", "get-contributor-tier",
+                [types.principal(wallet1.address)],
+                wallet1.address
+            )
+        ]);
+
+        assertEquals(block.receipts.length, 2);
+        assertEquals(block.receipts[0].result, '(ok u1)'); // First contribution ID
+        assertEquals(block.receipts[1].result, '(ok u1)'); // BRONZE tier
+    },
+});
+
