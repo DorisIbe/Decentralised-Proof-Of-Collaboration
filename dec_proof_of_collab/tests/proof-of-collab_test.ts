@@ -72,3 +72,38 @@ Clarinet.test({
     },
 });
 
+
+Clarinet.test({
+    name: "Ensure that contribution verification works correctly and updates scores",
+    async fn(chain: Chain, accounts: Map<string, Account>)
+    {
+        const deployer = accounts.get("deployer")!;
+        const wallet1 = accounts.get("wallet_1")!;
+
+        let block = chain.mineBlock([
+            Tx.contractCall("proof-of-collaboration", "initialize", [], deployer.address),
+            Tx.contractCall("proof-of-collaboration", "submit-contribution",
+                [types.utf8("Test contribution")],
+                wallet1.address
+            ),
+            Tx.contractCall("proof-of-collaboration", "verify-contribution",
+                [types.uint(1), types.uint(150)],
+                deployer.address
+            ),
+            Tx.contractCall("proof-of-collaboration", "update-contributor-tier",
+                [types.principal(wallet1.address)],
+                wallet1.address
+            ),
+            Tx.contractCall("proof-of-collaboration", "get-contributor-tier",
+                [types.principal(wallet1.address)],
+                wallet1.address
+            )
+        ]);
+
+        assertEquals(block.receipts.length, 5);
+        assertEquals(block.receipts[2].result, '(ok true)'); // Verification success
+        assertEquals(block.receipts[4].result, '(ok u2)'); // SILVER tier
+    },
+});
+
+
