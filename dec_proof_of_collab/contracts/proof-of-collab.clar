@@ -230,6 +230,35 @@
     ))
 )
 
+;; Contribution management
+(define-public (revoke-contribution (contribution-id uint))
+    (let (
+        (contribution (unwrap! (map-get? Contributions contribution-id) err-not-found))
+    )
+    (begin
+        (asserts! (or 
+            (is-eq tx-sender (get contributor contribution))
+            (default-to false (map-get? project-admins tx-sender))
+        ) err-owner-only)
+        (map-delete Contributions contribution-id)
+        (match (map-get? Contributors (get contributor contribution))
+            prev-profile
+            (begin
+                (map-set Contributors (get contributor contribution)
+                    (merge prev-profile
+                        {
+                            contribution-count: (- (get contribution-count prev-profile) u1)
+                        }
+                    )
+                )
+                (ok true)
+            )
+            err-not-found
+        )
+    ))
+)
+
+
 ;; Read-only functions
 (define-read-only (get-contribution (contribution-id uint))
     (map-get? Contributions contribution-id)
