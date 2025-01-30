@@ -22,3 +22,29 @@ Clarinet.test({
     },
 });
 
+Clarinet.test({
+    name: "Ensure that only owner can add project admins",
+    async fn(chain: Chain, accounts: Map<string, Account>)
+    {
+        const deployer = accounts.get("deployer")!;
+        const wallet1 = accounts.get("wallet_1")!;
+        const wallet2 = accounts.get("wallet_2")!;
+
+        let block = chain.mineBlock([
+            Tx.contractCall("proof-of-collaboration", "initialize", [], deployer.address),
+            Tx.contractCall("proof-of-collaboration", "add-project-admin",
+                [types.principal(wallet1.address)],
+                deployer.address
+            ),
+            Tx.contractCall("proof-of-collaboration", "add-project-admin",
+                [types.principal(wallet2.address)],
+                wallet1.address
+            )
+        ]);
+
+        assertEquals(block.receipts.length, 3);
+        assertEquals(block.receipts[1].result, '(ok true)');
+        assertEquals(block.receipts[2].result, '(err u100)'); // err-owner-only
+    },
+});
+
