@@ -161,4 +161,34 @@ Clarinet.test({
     },
 });
 
+Clarinet.test({
+    name: "Ensure that contribution revocation works correctly",
+    async fn(chain: Chain, accounts: Map<string, Account>)
+    {
+        const deployer = accounts.get("deployer")!;
+        const wallet1 = accounts.get("wallet_1")!;
+
+        let block = chain.mineBlock([
+            Tx.contractCall("proof-of-collaboration", "initialize", [], deployer.address),
+            Tx.contractCall("proof-of-collaboration", "submit-contribution",
+                [types.utf8("Test contribution")],
+                wallet1.address
+            ),
+            Tx.contractCall("proof-of-collaboration", "revoke-contribution",
+                [types.uint(1)],
+                wallet1.address
+            ),
+            Tx.contractCall("proof-of-collaboration", "get-contribution",
+                [types.uint(1)],
+                wallet1.address
+            )
+        ]);
+
+        assertEquals(block.receipts.length, 4);
+        assertEquals(block.receipts[2].result, '(ok true)'); // Revocation success
+        assertEquals(block.receipts[3].result, 'none'); // Contribution should not exist
+    },
+});
+
+
 
