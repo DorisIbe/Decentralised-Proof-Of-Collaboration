@@ -245,4 +245,37 @@ Clarinet.test({
 });
 
 
+Clarinet.test({
+    name: "Ensure that tier thresholds work correctly",
+    async fn(chain: Chain, accounts: Map<string, Account>)
+    {
+        const deployer = accounts.get("deployer")!;
+        const wallet1 = accounts.get("wallet_1")!;
+
+        let block = chain.mineBlock([
+            Tx.contractCall("proof-of-collaboration", "initialize", [], deployer.address),
+            Tx.contractCall("proof-of-collaboration", "submit-contribution",
+                [types.utf8("Platinum contribution")],
+                wallet1.address
+            ),
+            Tx.contractCall("proof-of-collaboration", "verify-contribution",
+                [types.uint(1), types.uint(500)], // PLATINUM_THRESHOLD
+                deployer.address
+            ),
+            Tx.contractCall("proof-of-collaboration", "update-contributor-tier",
+                [types.principal(wallet1.address)],
+                wallet1.address
+            ),
+            Tx.contractCall("proof-of-collaboration", "get-contributor-tier",
+                [types.principal(wallet1.address)],
+                wallet1.address
+            )
+        ]);
+
+        assertEquals(block.receipts.length, 5);
+        assertEquals(block.receipts[4].result, '(ok u4)'); // PLATINUM tier
+    },
+});
+
+
 
