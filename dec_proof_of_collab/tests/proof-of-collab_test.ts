@@ -106,4 +106,28 @@ Clarinet.test({
     },
 });
 
+Clarinet.test({
+    name: "Ensure that badge awarding system works correctly",
+    async fn(chain: Chain, accounts: Map<string, Account>)
+    {
+        const deployer = accounts.get("deployer")!;
+        const wallet1 = accounts.get("wallet_1")!;
+
+        let block = chain.mineBlock([
+            Tx.contractCall("proof-of-collaboration", "initialize", [], deployer.address),
+            Tx.contractCall("proof-of-collaboration", "award-badge",
+                [types.principal(wallet1.address), types.utf8("First Contribution Badge")],
+                deployer.address
+            ),
+            Tx.contractCall("proof-of-collaboration", "get-contributor-stats",
+                [types.principal(wallet1.address)],
+                wallet1.address
+            )
+        ]);
+
+        assertEquals(block.receipts.length, 3);
+        assertEquals(block.receipts[1].result, '(ok true)');
+    },
+});
+
 
