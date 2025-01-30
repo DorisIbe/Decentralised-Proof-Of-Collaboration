@@ -322,3 +322,25 @@
         u200
     ))
 )
+
+;; Contributor status management
+(define-public (set-contributor-status (contributor principal) (is-active bool))
+    (begin
+        (asserts! (default-to false (map-get? project-admins tx-sender)) err-owner-only)
+        (match (map-get? Contributors contributor)
+            prev-profile
+            (begin
+                (map-set Contributors contributor
+                    (merge prev-profile { is-active: is-active })
+                )
+                (ok true)
+            )
+            err-not-found
+        )
+    )
+)
+
+;; Utility functions
+(define-read-only (get-contributor-count)
+    (ok (var-get contribution-counter))
+)
