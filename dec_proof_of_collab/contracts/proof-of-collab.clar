@@ -5,6 +5,9 @@
 (define-constant err-owner-only (err u100))
 (define-constant err-not-found (err u101))
 (define-constant err-already-verified (err u102))
+(define-constant MAX-ITEMS-PER-PAGE u50)
+(define-constant DAYS-IN-MONTH u30)
+(define-constant BLOCKS-PER-DAY u144)
 
 ;; Define contribution tiers
 (define-constant BRONZE u1)
@@ -36,6 +39,15 @@
         details: (string-utf8 256),
         score: uint,
         verified: bool
+    }
+)
+
+(define-map Achievements
+    principal
+    {
+        badges: (list 10 (string-utf8 64)),
+        last-active: uint,
+        streak: uint
     }
 )
 
