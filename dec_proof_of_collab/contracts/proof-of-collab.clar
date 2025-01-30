@@ -278,3 +278,14 @@
 (define-read-only (is-project-admin (address principal))
     (default-to false (map-get? project-admins address))
 )
+
+;; Analytics and reporting
+(define-read-only (get-contributor-stats (contributor principal))
+    (match (map-get? Contributors contributor)
+        profile (ok {
+            profile: profile,
+            achievements: (map-get? Achievements contributor)
+        })
+        err-not-found
+    )
+)
