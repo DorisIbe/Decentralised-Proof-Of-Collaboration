@@ -289,3 +289,36 @@
         err-not-found
     )
 )
+
+(define-read-only (get-recent-contributions (limit uint))
+    (let (
+        (max-items (if (> limit MAX-ITEMS-PER-PAGE) MAX-ITEMS-PER-PAGE limit))
+        (current-id (var-get contribution-counter))
+    )
+    (ok (filter not-none
+        (map get-contribution
+            (fold decrease-id 
+                (list current-id)
+                (list (- max-items u1))
+            )
+        )
+    )))
+)
+
+;; Helper function to filter out none values
+(define-private (not-none (value (optional {
+        contributor: principal,
+        timestamp: uint,
+        details: (string-utf8 256),
+        score: uint,
+        verified: bool
+    })))
+    (is-some value)
+)
+
+(define-private (decrease-id (n uint) (prev-ids (list 200 uint)))
+    (unwrap-panic (as-max-len? 
+        (append prev-ids (- (unwrap-panic (element-at prev-ids u0)) u1))
+        u200
+    ))
+)
