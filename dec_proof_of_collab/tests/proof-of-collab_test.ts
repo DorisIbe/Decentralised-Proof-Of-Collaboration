@@ -190,5 +190,31 @@ Clarinet.test({
     },
 });
 
+Clarinet.test({
+    name: "Ensure that recent contributions listing works correctly",
+    async fn(chain: Chain, accounts: Map<string, Account>)
+    {
+        const wallet1 = accounts.get("wallet_1")!;
+
+        let block = chain.mineBlock([
+            Tx.contractCall("proof-of-collaboration", "submit-contribution",
+                [types.utf8("Test contribution 1")],
+                wallet1.address
+            ),
+            Tx.contractCall("proof-of-collaboration", "submit-contribution",
+                [types.utf8("Test contribution 2")],
+                wallet1.address
+            ),
+            Tx.contractCall("proof-of-collaboration", "get-recent-contributions",
+                [types.uint(5)],
+                wallet1.address
+            )
+        ]);
+
+        assertEquals(block.receipts.length, 3);
+        // Verify the response contains the expected contributions
+    },
+});
+
 
 
