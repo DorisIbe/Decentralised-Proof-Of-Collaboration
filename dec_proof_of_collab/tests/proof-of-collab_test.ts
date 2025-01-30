@@ -130,4 +130,35 @@ Clarinet.test({
     },
 });
 
+Clarinet.test({
+    name: "Ensure that activity streak tracking works correctly",
+    async fn(chain: Chain, accounts: Map<string, Account>)
+    {
+        const wallet1 = accounts.get("wallet_1")!;
+
+        let block = chain.mineBlock([
+            Tx.contractCall("proof-of-collaboration", "update-activity-streak",
+                [types.principal(wallet1.address)],
+                wallet1.address
+            )
+        ]);
+
+        // Mine blocks to simulate time passing (almost one day)
+        chain.mineEmptyBlock(143); // BLOCKS_PER_DAY - 1
+
+        block = chain.mineBlock([
+            Tx.contractCall("proof-of-collaboration", "update-activity-streak",
+                [types.principal(wallet1.address)],
+                wallet1.address
+            ),
+            Tx.contractCall("proof-of-collaboration", "get-contributor-stats",
+                [types.principal(wallet1.address)],
+                wallet1.address
+            )
+        ]);
+
+        assertEquals(block.receipts[0].result, '(ok true)');
+    },
+});
+
 
