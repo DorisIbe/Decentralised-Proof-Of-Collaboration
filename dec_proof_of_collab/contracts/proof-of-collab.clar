@@ -169,6 +169,33 @@
     )
 )
 
+(define-public (award-badge (contributor principal) (badge (string-utf8 64)))
+    (begin
+        (asserts! (default-to false (map-get? project-admins tx-sender)) err-owner-only)
+        (match (map-get? Achievements contributor)
+            prev-achievements 
+            (map-set Achievements contributor
+                (merge prev-achievements
+                    {
+                        badges: (unwrap! (as-max-len? 
+                            (append (get badges prev-achievements) badge) u10)
+                            (err u103))
+                    }
+                )
+            )
+            (map-set Achievements contributor
+                {
+                    badges: (list badge),
+                    last-active: block-height,
+                    streak: u1
+                }
+            )
+        )
+        (ok true)
+    )
+)
+
+
 ;; Read-only functions
 (define-read-only (get-contribution (contribution-id uint))
     (map-get? Contributions contribution-id)
